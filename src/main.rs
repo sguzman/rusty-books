@@ -1,5 +1,4 @@
 extern crate scraper;
-extern crate reqwest;
 extern crate rayon;
 
 #[macro_use]
@@ -11,6 +10,8 @@ use std::collections::HashMap;
 const LIMIT: u16 = 1307;
 
 mod network {
+    extern crate reqwest;
+
     pub fn request(page_id: u16) -> String {
         let url = if page_id == 1 {
             String::from("http://23.95.221.108/")
@@ -39,6 +40,8 @@ mod network {
 }
 
 mod dom {
+    extern crate scraper;
+
     pub fn get_single_text<'a>(html: &'a scraper::Html, select: &str) -> &'a str {
         let selector = scraper::Selector::parse(select).unwrap();
         let text = html.select(&selector).next().unwrap().text().collect::<Vec<_>>();
