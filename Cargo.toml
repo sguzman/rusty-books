@@ -1,5 +1,5 @@
 [package]
-name = "Rust Books"
+name = "rustbooks"
 version = "0.1.0"
 authors = ["Salvador Guzman <guzmansalv@gmail.com>"]
 
