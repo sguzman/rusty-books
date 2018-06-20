@@ -10,45 +10,49 @@ use std::collections::HashMap;
 
 const LIMIT: u16 = 1307;
 
-fn request(page_id: u16) -> String {
-    let url = if page_id == 1 {
-        String::from("http://23.95.221.108/")
-    } else {
-        format!("http://23.95.221.108/page/{}/", page_id)
-    };
-    let resp = reqwest::get(&url);
-    return if let Err(_e) = resp {
-        println!("Failed {}", url);
-        request(page_id)
-    } else {
-        resp.unwrap().text().unwrap()
+mod network {
+    pub fn request(page_id: u16) -> String {
+        let url = if page_id == 1 {
+            String::from("http://23.95.221.108/")
+        } else {
+            format!("http://23.95.221.108/page/{}/", page_id)
+        };
+        let resp = reqwest::get(&url);
+        return if let Err(_e) = resp {
+            println!("Failed {}", url);
+            request(page_id)
+        } else {
+            resp.unwrap().text().unwrap()
+        }
+    }
+
+    pub fn request_path(path: &str) -> String {
+        let url = format!("http://23.95.221.108{}", path);
+        let resp = reqwest::get(&url);
+        return if let Err(_e) = resp {
+            println!("Failed {}", url);
+            request_path(path)
+        } else {
+            resp.unwrap().text().unwrap()
+        }
     }
 }
 
-fn book_req(path: &str) -> String {
-    let url = format!("http://23.95.221.108{}", path);
-    let resp = reqwest::get(&url);
-    return if let Err(_e) = resp {
-        println!("Failed {}", url);
-        book_req(path)
-    } else {
-        resp.unwrap().text().unwrap()
+mod dom {
+    pub fn get_single_text<'a>(html: &'a scraper::Html, select: &str) -> &'a str {
+        let selector = scraper::Selector::parse(select).unwrap();
+        let text = html.select(&selector).next().unwrap().text().collect::<Vec<_>>();
+        return if text.is_empty() {
+            ""
+        } else {
+            text[0]
+        }
     }
-}
 
-fn get_single_text<'a>(html: &'a scraper::Html, select: &str) -> &'a str {
-    let selector = scraper::Selector::parse(select).unwrap();
-    let text = html.select(&selector).next().unwrap().text().collect::<Vec<_>>();
-    return if text.is_empty() {
-        ""
-    } else {
-        text[0]
+    pub fn get_single<'a>(html: &'a scraper::Html, select: &str, att: &str) -> &'a str {
+        let selector = scraper::Selector::parse(select).unwrap();
+        &html.select(&selector).next().unwrap().value().attr(att).unwrap()
     }
-}
-
-fn get_single<'a>(html: &'a scraper::Html, select: &str, att: &str) -> &'a str {
-    let selector = scraper::Selector::parse(select).unwrap();
-    &html.select(&selector).next().unwrap().value().attr(att).unwrap()
 }
 
 fn main() {
@@ -58,7 +62,7 @@ fn main() {
         (1..LIMIT).into_par_iter().flat_map(|page_id: u16| {
             let selector = scraper::Selector::parse("h2.post-title a[href]").unwrap();
             let html = {
-                let html = request(page_id);
+                let html = network::request(page_id);
                 scraper::Html::parse_document(&html)
             };
             let a_href = {
@@ -81,23 +85,23 @@ fn main() {
                     println!("Downloading {}", url);
 
                     let html = {
-                        let html = book_req(url);
+                        let html = network::request_path(url);
                         scraper::Html::parse_document(&html)
                     };
 
-                    let title = get_single_text(&html, "h1.post-title");
+                    let title = dom::get_single_text(&html, "h1.post-title");
                     let img = {
-                        let img = get_single(&html, "div.book-cover img[src]", "src");
+                        let img = dom::get_single(&html, "div.book-cover img[src]", "src");
                         let img = img.trim_left_matches("https://it-eb.com");
                         format!("http://23.95.221.108{}", img)
                     };
                     let link = {
-                        let id = get_single(&html, "input[name=\"comment_post_ID\"]", "value");
+                        let id = dom::get_single(&html, "input[name=\"comment_post_ID\"]", "value");
                         let url = format!("/download.php?id={}", id);
-                        book_req(&url)
+                        network::request_path(&url)
                     };
 
-                    let desc = get_single_text(&html, "div.entry-inner");
+                    let desc = dom::get_single_text(&html, "div.entry-inner");
 
                     let cats = {
                         let selector = scraper::Selector::parse("p.post-btm-cats a[href]").unwrap();
@@ -161,13 +165,13 @@ fn main() {
                     };
 
                     let value = json!({
-                  "title": title,
-                  "img": img,
-                  "link": link,
-                  "desc": desc,
-                  "categories": cats,
-                  "details": details
-                });
+                      "title": title,
+                      "img": img,
+                      "link": link,
+                      "desc": desc,
+                      "categories": cats,
+                      "details": details
+                    });
                     std::fs::write(full_path, value.to_string()).expect("Could not write");
                     list.push(value);
                 }
