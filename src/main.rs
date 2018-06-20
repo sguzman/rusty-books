@@ -1,4 +1,3 @@
-extern crate scraper;
 extern crate rayon;
 
 #[macro_use]
@@ -56,6 +55,20 @@ mod dom {
         let selector = scraper::Selector::parse(select).unwrap();
         &html.select(&selector).next().unwrap().value().attr(att).unwrap()
     }
+
+    pub fn get_html_from_id(page_id: u16) -> scraper::Html {
+        let html = super::network::request(page_id);
+        scraper::Html::parse_document(&html)
+    }
+
+    pub fn get_html_from_path(path: &str) -> scraper::Html {
+        let html = super::network::request_path(path);
+        scraper::Html::parse_document(&html)
+    }
+
+    pub fn selector(html: &str) -> scraper::Selector {
+        scraper::Selector::parse(html).unwrap()
+    }
 }
 
 fn main() {
@@ -63,11 +76,8 @@ fn main() {
 
     let collection: Vec<serde_json::Value> =
         (1..LIMIT).into_par_iter().flat_map(|page_id: u16| {
-            let selector = scraper::Selector::parse("h2.post-title a[href]").unwrap();
-            let html = {
-                let html = network::request(page_id);
-                scraper::Html::parse_document(&html)
-            };
+            let selector = dom::selector("h2.post-title a[href]");
+            let html = dom::get_html_from_id(page_id);
             let a_href = {
                 html.select(&selector)
             };
@@ -87,10 +97,7 @@ fn main() {
                 } else {
                     println!("Downloading {}", url);
 
-                    let html = {
-                        let html = network::request_path(url);
-                        scraper::Html::parse_document(&html)
-                    };
+                    let html = dom::get_html_from_path(url);
 
                     let title = dom::get_single_text(&html, "h1.post-title");
                     let img = {
@@ -107,8 +114,8 @@ fn main() {
                     let desc = dom::get_single_text(&html, "div.entry-inner");
 
                     let cats = {
-                        let selector = scraper::Selector::parse("p.post-btm-cats a[href]").unwrap();
-                        let categories = html.select(&selector);
+                        let select = dom::selector("p.post-btm-cats a[href]");
+                        let categories = html.select(&select);
                         let mut cats: Vec<&str> = Vec::new();
                         for c in categories {
                             let t = c.text().collect::<Vec<_>>()[0];
@@ -119,8 +126,8 @@ fn main() {
 
                     let details = {
                         let key_text = {
-                            let selector = scraper::Selector::parse("div.book-details li span").unwrap();
-                            let keys = html.select(&selector);
+                            let select = dom::selector("div.book-details li span");
+                            let keys = html.select(&select);
                             let mut vec_keys: Vec<&str> = Vec::new();
                             for k in keys {
                                 let t = k.text().collect::<Vec<_>>()[0];
@@ -131,8 +138,8 @@ fn main() {
                         };
 
                         let val_text = {
-                            let selector = scraper::Selector::parse("div.book-details li").unwrap();
-                            let val = html.select(&selector);
+                            let select = dom::selector("div.book-details li");
+                            let val = html.select(&select);
                             let mut vec_val: Vec<&str> = Vec::new();
                             for k in val {
                                 let t = k.text().collect::<Vec<_>>()[1];
@@ -156,15 +163,15 @@ fn main() {
                         }
 
                         json!({
-                    "isbn-10": vec.get("isbn-10"),
-                    "isbn-13": vec.get("isbn-13"),
-                    "format": vec.get("format"),
-                    "authors": vec.get("authors"),
-                    "publication date": vec.get("publication date"),
-                    "publisher": vec.get("publisher"),
-                    "pages": vec.get("pages"),
-                    "size": vec.get("size")
-                })
+                            "isbn-10": vec.get("isbn-10"),
+                            "isbn-13": vec.get("isbn-13"),
+                            "format": vec.get("format"),
+                            "authors": vec.get("authors"),
+                            "publication date": vec.get("publication date"),
+                            "publisher": vec.get("publisher"),
+                            "pages": vec.get("pages"),
+                            "size": vec.get("size")
+                        })
                     };
 
                     let value = json!({
