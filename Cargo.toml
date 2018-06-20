@@ -1,0 +1,10 @@
+[package]
+name = "Rust Books"
+version = "0.1.0"
+authors = ["Salvador Guzman <guzmansalv@gmail.com>"]
+
+[dependencies]
+scraper = "0.7.0"
+reqwest = "0.8.6"
+rayon = "1.0.1"
+serde_json = "1.0.21"
