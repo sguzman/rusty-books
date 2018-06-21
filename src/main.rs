@@ -39,6 +39,14 @@ fn count_guard(count: usize) -> usize {
     }
 }
 
+fn base_idx_guard(base: usize, limit: usize, count: usize) -> usize {
+    if base > limit {
+        limit - count
+    } else {
+        base
+    }
+}
+
 fn init() {
     println!("start");
 
@@ -52,8 +60,8 @@ fn init() {
             .resource("/{base_idx}/{count}", |r| {
                 let items = init_json();
                 r.get().with(move |path: Path<(usize, usize)>| {
-                    let base_idx: usize = path.0;
                     let count: usize = count_guard(page.1);
+                    let base_idx: usize = base_idx_guard(path.0, items.len(), count);
 
                     let end_idx: usize = base_idx + count;
 
