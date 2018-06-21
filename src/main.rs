@@ -70,11 +70,12 @@ fn init() {
 
                     let value = slicy.join(", ");
                     let value = format!("[ {} ]", value);
-                    value.clone()
+                    HttpResponse::Ok()
+                        .header("Access-Control-Allow-Origin", "*")
+                        .content_type("application/json")
+                        .body(value.clone())
                 }
-            )
-                    .head("Access-Control-Allow-Origin", "*")
-            })
+            )})
     })
         .bind(addr)
         .expect("Can not bind to port 8000")
