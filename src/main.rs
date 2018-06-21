@@ -31,6 +31,14 @@ fn get_port() -> String {
     }
 }
 
+fn count_guard(count: usize) -> usize {
+    match count {
+        0 => 1,
+        c if path.1 > PAGE_LIMIT => PAGE_LIMIT,
+        _ => count
+    }
+}
+
 fn init() {
     println!("start");
 
@@ -45,15 +53,7 @@ fn init() {
                 let items = init_json();
                 r.get().with(move |path: Path<(usize, usize)>| {
                     let base_idx: usize = path.0;
-                    let count: usize = {
-                        if path.1 == 0 {
-                            1
-                        } else if path.1 > PAGE_LIMIT {
-                            PAGE_LIMIT
-                        } else {
-                            path.1
-                        }
-                    };
+                    let count: usize = count_guard(page.1);
 
                     let end_idx: usize = base_idx + count;
 
