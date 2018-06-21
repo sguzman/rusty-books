@@ -52,7 +52,7 @@ fn init() {
     println!("start");
 
     let port = get_port();
-    let addr = format!("127.0.0.1:{}", port);
+    let addr = format!("0.0.0.0:{}", port);
     println!("Binding at {}", addr);
 
     server::new(|| {
