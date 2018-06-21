@@ -21,7 +21,7 @@ fn init() {
         App::new()
             .resource("/{name}", |r| {
                 let items = init_json();
-                r.get().with(move|path: Path<usize>| {
+                r.get().with(move |path: Path<usize>| {
                     let value: usize = *path;
                     let value = &items[value];
                     value.clone()
