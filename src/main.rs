@@ -20,6 +20,7 @@ fn get_port() -> String {
     let mut port: String = String::from("");
     for (key, value) in std::env::vars() {
         if key == "PORT" {
+            println!("Found port {}", value);
             port = value;
         }
     }
