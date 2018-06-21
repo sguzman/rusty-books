@@ -72,7 +72,9 @@ fn init() {
                     let value = format!("[ {} ]", value);
                     value.clone()
                 }
-            )})
+            )
+                    .head("Access-Control-Allow-Origin", "*")
+            })
     })
         .bind(addr)
         .expect("Can not bind to port 8000")
