@@ -38,6 +38,7 @@ fn init() {
 
     server::new(|| {
         App::new()
+            .resource("/", |r| r.get().f( |_|HttpResponse::Ok()))
             .resource("/{name}", |r| {
                 let items = init_json();
                 r.get().with(move |path: Path<usize>| {
@@ -47,7 +48,7 @@ fn init() {
                 }
             )})
     })
-        .bind("127.0.0.1:8000")
+        .bind(addr)
         .expect("Can not bind to port 8000")
         .run();
 }
