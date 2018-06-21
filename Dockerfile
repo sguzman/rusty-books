@@ -17,10 +17,11 @@ RUN curl https://sh.rustup.rs -sSf > /tmp/rustup-init.sh \
     && chmod +x /tmp/rustup-init.sh \
     && sh /tmp/rustup-init.sh -y \
     && rm -rf /tmp/rustup-init.sh
-ENV PATH "$PATH:~/.cargo/bin"
+ENV PATH "~/.cargo/bin/:${PATH}"
 
 # Install nightly rust.
 RUN ~/.cargo/bin/rustup install nightly
+RUN ~/.cargo/bin/rustup default nightly
 
 ADD . rust
 WORKDIR rust
