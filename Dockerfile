@@ -19,10 +19,6 @@ RUN curl https://sh.rustup.rs -sSf > /tmp/rustup-init.sh \
     && rm -rf /tmp/rustup-init.sh
 ENV PATH "~/.cargo/bin/:${PATH}"
 
-# Install nightly rust.
-RUN ~/.cargo/bin/rustup install nightly
-RUN ~/.cargo/bin/rustup default nightly
-
 ADD . rust
 WORKDIR rust
 RUN cargo build --release --verbose --color always
