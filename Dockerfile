@@ -1,8 +1,8 @@
-FROM alpine
+FROM ubuntu
 
 WORKDIR /root
 
-RUN apk update && apk add --no-cache rust cargo
+RUN apt-get update && apt-get isntall -y rust cargo
 
 ADD . rust
 WORKDIR rust
