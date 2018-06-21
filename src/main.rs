@@ -1,6 +1,6 @@
 extern crate actix_web;
 
-use actix_web::{App, Path, server};
+use actix_web::{App, HttpResponse, Path, server};
 
 fn init_json() -> Vec<String> {
     let paths = std::fs::read_dir("./data").unwrap();
@@ -14,8 +14,27 @@ fn init_json() -> Vec<String> {
     collection
 }
 
+fn get_port() -> String {
+    let mut port: String = String::from("");
+    for (key, value) in std::env::vars() {
+        if key == "PORT" {
+            port = value;
+        }
+    }
+
+    return if port.is_empty() {
+        String::from("8080")
+    } else {
+        port
+    }
+}
+
 fn init() {
     println!("start");
+
+    let port = get_port();
+    let addr = format!("127.0.0.1:{}", port);
+    println!("Binding at {}", addr);
 
     server::new(|| {
         App::new()
