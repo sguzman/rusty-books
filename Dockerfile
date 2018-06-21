@@ -2,7 +2,7 @@ FROM ubuntu
 
 WORKDIR /root
 
-RUN apt-get update && apt-get isntall -y rust cargo
+RUN apt-get update && apt-get install -y rust cargo
 
 ADD . rust
 WORKDIR rust
