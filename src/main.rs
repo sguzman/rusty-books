@@ -38,7 +38,7 @@ fn init() {
 
     server::new(|| {
         App::new()
-            .resource("/", |r| r.get().f( |_|HttpResponse::Ok()))
+            .resource("/", |r| r.get().f( |_|HttpResponse::Ok().body("<h1>test</h1>")))
             .resource("/{name}", |r| {
                 let items = init_json();
                 r.get().with(move |path: Path<usize>| {
