@@ -22,4 +22,4 @@ ADD . rust
 WORKDIR rust
 RUN ~/.cargo/bin/cargo build --release --verbose --color always
 
-ENTRYPOINT ['./target/release/rustbooks']
+CMD './target/release/rustbooks'
