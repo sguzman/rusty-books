@@ -2,6 +2,8 @@ extern crate actix_web;
 
 use actix_web::{App, HttpResponse, Path, server};
 
+const PAGE_LIMIT: usize = 50;
+
 fn init_json() -> Vec<String> {
     let paths = std::fs::read_dir("./data").unwrap();
     let mut collection: Vec<String> = Vec::new();
@@ -39,11 +41,26 @@ fn init() {
     server::new(|| {
         App::new()
             .resource("/", |r| r.get().f( |_|HttpResponse::Ok().body("<h1>test</h1>")))
-            .resource("/{name}", |r| {
+            .resource("/{base_idx}/{count}", |r| {
                 let items = init_json();
-                r.get().with(move |path: Path<usize>| {
-                    let value: usize = *path;
-                    let value = &items[value];
+                r.get().with(move |path: Path<(usize, usize)>| {
+                    let base_idx: usize = path.0;
+                    let count: usize = {
+                        if path.1 == 0 {
+                            1
+                        } else if path.1 > PAGE_LIMIT {
+                            PAGE_LIMIT
+                        } else {
+                            path.1
+                        }
+                    };
+
+                    let end_idx: usize = base_idx + count;
+
+                    let slicy = &items[base_idx..end_idx];
+
+                    let value = slicy.join(", ");
+                    let value = format!("[ {} ]", value);
                     value.clone()
                 }
             )})
